@@ -1,54 +1,76 @@
-# Cifra de César com Chave Gerada usando Diffie-Hellman
+# Cifra de César com Chave Gerada Usando Diffie-Hellman
 
-O projeto implementa uma comunicação segura utilizando a Cifra de César com uma chave gerada dinamicamente usando o algoritmo de troca de chaves Diffie-Hellman. O código permite a troca de mensagens criptografadas entre dois participantes através de uma conexão TCP.
+Este projeto implementa uma comunicação segura entre um servidor (Bob) e um cliente (Alice) utilizando uma combinação da Cifra de César e o algoritmo de troca de chaves Diffie-Hellman. O sistema permite que Bob e Alice troquem mensagens criptografadas, garantindo a confidencialidade através de uma chave secreta gerada de forma segura.
 
-## Arquivos
+## 📜 Descrição
 
-- **Simple_tcpServer.py**: Implementa um servidor TCP que aguarda conexões de clientes.
-- **Simple_tcpClient.py**: Implementa um cliente TCP que se conecta ao servidor e envia uma mensagem.
+O projeto consiste em dois scripts principais:
 
-## Pré-requisitos
+- **Simple_tcpServer.py**: Implementa o lado do servidor (Bob), responsável por gerar uma chave pública e privada usando Diffie-Hellman, decifrar a mensagem recebida do cliente, e retornar a mensagem em caixa alta.
+  
+- **Simple_tcpClient.py**: Implementa o lado do cliente (Alice), responsável por gerar sua chave pública e privada, criptografar uma mensagem com a chave secreta e enviar a mensagem para o servidor.
 
-- Python 3.x instalado no sistema.
+### 🧠 Algoritmos Utilizados
 
-## Como executar
+1. **Diffie-Hellman**: Utilizado para troca de chaves segura entre Alice e Bob. Cada parte gera uma chave pública e usa a chave pública da outra parte para calcular uma chave secreta compartilhada, sem nunca transmitir a chave privada.
+  
+2. **Cifra de César**: Usada para cifrar e decifrar mensagens com base na chave secreta compartilhada. A cifra de César desloca cada caractere de uma mensagem de acordo com o valor da chave.
 
-### Executando o servidor
+## 📂 Arquivos
 
-1. Primeiro, inicie o servidor TCP. Abra um terminal e execute o seguinte comando:
+- **Simple_tcpServer.py**: Implementa o servidor Bob, responsável por receber e decifrar mensagens criptografadas, utilizando a chave gerada via Diffie-Hellman.
+- **Simple_tcpClient.py**: Implementa o cliente Alice, responsável por enviar mensagens cifradas utilizando a chave secreta compartilhada via Diffie-Hellman.
 
+## 🚀 Funcionalidades
+
+- **Troca Segura de Chaves**: Geração de chaves pública e privada usando o protocolo Diffie-Hellman.
+- **Criptografia de Mensagens**: As mensagens são criptografadas com a Cifra de César, utilizando a chave secreta gerada.
+- **Comunicação em Rede**: Comunicação TCP/IP entre um cliente e um servidor em Python.
+
+## ⚙️ Como Executar
+
+### Pré-requisitos
+
+- Python 3.x instalado
+- Rede local configurada para permitir comunicação entre servidor e cliente
+
+### Passos
+
+1. Clone o repositório para sua máquina local.
    ```bash
-   python3 Simple_tcpServer.py
+   git clone https://github.com/seu_usuario/seu_repositorio.git
    ```
 
-O servidor será iniciado e ficará aguardando por conexões na porta especificada.
-
-### Executando o cliente
-
-2. Em seguida, em outro terminal, execute o cliente TCP:
-
+2. No servidor (Bob), execute o script `Simple_tcpServer.py`.
    ```bash
-   python3 Simple_tcpClient.py
+   python Simple_tcpServer.py
    ```
 
-   O cliente tentará se conectar ao servidor e enviar uma mensagem predefinida.
+3. No cliente (Alice), execute o script `Simple_tcpClient.py` e insira a chave privada e a mensagem a ser enviada.
+   ```bash
+   python Simple_tcpClient.py
+   ```
 
-## Funcionalidades
+4. O servidor responderá com a mensagem em caixa alta.
 
-- **Verificação de número primo**: Verifica se um número dado é primo, essencial para o algoritmo de Diffie-Hellman.
-- **Geração de chave Diffie-Hellman**: Gera chaves públicas e privadas usando os parâmetros compartilhados e segredos privados.
-- **Cifra de César**: Implementa a cifra de César para criptografar e descriptografar mensagens usando a chave gerada.
-- **Envio de mensagens**: Criptografa e envia uma mensagem usando a chave privada e pública.
-- **Recebimento de mensagens**: Recebe e descriptografa uma mensagem usando a chave privada e a chave pública recebida.
+## 🛠 Estrutura do Código
 
-## Estrutura do Código
+### Funções Principais
 
-1. **Função `ehPrimo(N)`**: Verifica se um número `N` é primo.
-2. **Função `diffie_hellman(p, g, chavePrivada)`**: Calcula a chave pública usando os parâmetros `p` (número primo), `g` (base) e uma `chavePrivada`.
-3. **Função `cifraCesar(modo, mensagem, chave)`**: Aplica a Cifra de César para criptografar (`modo = 'E'`) ou descriptografar (`modo = 'D'`) uma mensagem usando a `chave`.
-4. **Função `envio(mensagem, p, g, privateSecret)`**: Criptografa a mensagem e envia juntamente com a chave pública.
-5. **Função `recebimento(mensagem, p, sharedSecretReceived, privateSecret)`**: Descriptografa a mensagem recebida usando a chave pública recebida e a chave privada.
+- **ehPrimo(N)**: Verifica se um número é primo.
+- **diffieHellmanR(p, g, chavePrivada)**: Calcula a chave pública (R) usando Diffie-Hellman.
+- **diffieHellmanK(p, chavePublica, chavePrivada)**: Calcula a chave secreta compartilhada (K) usando Diffie-Hellman.
+- **cifraCesar(modo, mensagem, chave)**: Cifra ou decifra uma mensagem utilizando a Cifra de César.
+- **envio(mensagem, p, g, privateSecret, sharedSecretReceived)**: Prepara a mensagem cifrada e a chave pública para envio.
+- **recebimento(jsonRecebido, p, privateSecret)**: Decifra a mensagem recebida usando a chave compartilhada.
 
-## Licença
+## 🔐 Segurança
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto é um exemplo didático da implementação de algoritmos de criptografia básicos. Não deve ser usado em ambientes de produção, pois há vulnerabilidades conhecidas na Cifra de César, e os parâmetros usados no Diffie-Hellman são intencionalmente simples.
+
+## 📧 Grupo
+
+- 081200035 - **Abrão Astério Junior**
+- 081200034 - **Alexandre Bezerra de Andrade**
+- 081200021 - **Daniel Santos de Sousa**
+- 081200018 - **Francisco Tommasi Silveira**

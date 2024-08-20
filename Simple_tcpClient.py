@@ -1,11 +1,19 @@
 # Bibliotecas necessárias
+import json
 from socket import *
-
 
 ###################################################################
 # Cifra de César com Chave gerada usando Diffie-Hellman em Python #
 ###################################################################
 
+
+##################################
+# GRUPO                          #
+# * Abrão Asterio Junior         #
+# * Alexandre Bezerra de Andrade #
+# * Daniel Santos de Sousa       #
+# * Francisco Tommasi Silveira   #
+##################################
 
 
 # ALICE = CLIENT
@@ -18,27 +26,29 @@ from socket import *
 ##########################################################
 # Função para verificar se um número é primo
 # N: número a ser verificado
+# Retorna True se for primo e False se não for
 def ehPrimo(N):
     i = 2
 
     while i < N:
         R = N % i
         if R == 0:
-            print("{} não é primo!".format(N))
+            print("*ehPrimo:\n**{} não é primo!".format(N))
             return False
         i += 1
     else:
-        print("{} é primo!".format(N))
+        print("*ehPrimo:\n**{} é primo!".format(N))
         return True
 ##########################################################
 
 
 ##########################################################
-# Função para calcular a chave secreta compartilhada/pública usando Diffie-Hellman
+# Função para calcular a chave secreta compartilhada/pública usando Diffie-Hellman (R)
 # p: número primo (número maior que 2)
 # g: base (número inteiro menor que p)
 # chavePrivada: número secreto maior que 1
-def diffie_hellman(p, g, chavePrivada):
+# Retorna a chave pública (R)
+def diffieHellmanR(p, g, chavePrivada):
     # Checa se p e g são primos
     if not ehPrimo(p) or not ehPrimo(g):
         raise ValueError("p e g devem ser primos!")
@@ -48,9 +58,46 @@ def diffie_hellman(p, g, chavePrivada):
     # Checa se a chave privada é maior que 1
     if chavePrivada < 1:
         raise ValueError("Chave privada deve ser maior que 1!")
-    
+
     # Calcula a chave pública (R) de Alice e Bob
-    return (g ** chavePrivada) % p
+    R = (g ** chavePrivada) % p
+
+    #DEBUG
+    print("*Diffie-Hellman:")
+    print(f"**R = {R}")
+
+    # Retorna a chave pública (R)
+    return R
+##########################################################
+
+
+##########################################################
+# Função para calcular a chave privada usando Diffie-Hellman (K)
+# p: número primo (número maior que 2)
+# chavePublica: chave pública (número aleatório)
+# chavePrivada: número secreto maior que 1
+# Retorna a chave privada (K)
+def diffieHellmanK(p,  chavePublica, chavePrivada):
+    intChavePublica = int(chavePublica)
+    # Checa se p e g são primos
+    if not ehPrimo(p) or not ehPrimo(g):
+        raise ValueError("p e g devem ser primos!")
+    # Checa se p é maior que 2 e g é maior que 1
+    if p < 2 or g < 1:
+        raise ValueError("p deve ser maior que 2 e g deve ser maior que 1!")
+    # Checa se a chave privada é maior que 1
+    if intChavePublica < 1:
+        raise ValueError("Chave privada deve ser maior que 1!")
+
+    # Calcula a chave privada (K) de Alice e Bob
+    K = (intChavePublica ** chavePrivada) % p
+
+    #DEBUG
+    print("*Diffie-Hellman:")
+    print(f"**K = {K}")
+
+    # Retorna a chave privada (K)
+    return K
 ##########################################################
 
 
@@ -58,7 +105,8 @@ def diffie_hellman(p, g, chavePrivada):
 # Função Cifra de César
 # modo: 'E' para cifrar e 'D' para decifrar
 # mensagem: mensagem a ser cifrada ou decifrada
-# chave: chave privada (número aleatório)
+# chave: chave para cifrar ou decifrar
+# Retorna a mensagem cifrada ou decifrada
 def cifraCesar(modo, mensagem, chave):
     # Array para armazenar os caracteres da mensagem
     charArray = []
@@ -66,12 +114,24 @@ def cifraCesar(modo, mensagem, chave):
     # Loop para cada caractere na mensagem e cifra (ou decifra) a mensagem
     for caractere in mensagem:
         if modo == 'D': # Decifra
-            charArray.append = [chr(ord(caractere) - chave)]
+            charArray.append(chr(ord(caractere) - chave))
         elif modo == 'E': # Cifra
-            charArray.append = [chr(ord(caractere) + chave)]
+            charArray.append(chr(ord(caractere) + chave))
+
+    # String da mensagem tratada
+    mensagemRetorno = ""
+
+    # Concatena os caracteres do array na string da mensagem
+    for caract in charArray:
+            mensagemRetorno += caract
+
+    #DEBUG
+    print(f"*Cifra de Cesar:")
+    print(f"**Mensagem recebida:")
+    print(f"**Mensagem retornada: {mensagemRetorno}")
 
     # Retorna a mensagem cifrada ou decifrada
-    return str.join(charArray)
+    return mensagemRetorno
 ##########################################################
 
 
@@ -81,16 +141,22 @@ def cifraCesar(modo, mensagem, chave):
 # p: número primo
 # g: base
 # privateSecret: chave privada (número aleatório)
-def envio(mensagem, p, g, privateSecret):
+# Retorna um objeto JSON com a mensagem cifrada e a chave pública
+def envio(mensagem, p, g, privateSecret, sharedSecretReceived):
     # Chave pública (número aleatório)
-    sharedSecretSent = diffie_hellman(p, g, privateSecret)
+    sharedSecretSent = diffieHellmanR(p, g, privateSecret)
+    k = diffieHellmanK(p, sharedSecretReceived, privateSecret)
 
-    # Cifra a mensagem (adiciona a chave pública no início da mensagem a ser enviada)
-    sharedMessageCrypto = str(sharedSecretSent) + cifraCesar('E', mensagem, privateSecret)
+    # Cifra a mensagem (adiciona a chave pública no início da mensagem a ser enviada) em format STRING
+    #sharedMessageCrypto = f"{sharedSecretSent}{cifraCesar('E', mensagem, k)}"
+
+    # Cifra a mensagem, adiciona a chave pública  e retorna tudo em formato JSON
+    sharedMessageCrypto = json.dumps({"MensagemCriptografada": cifraCesar('E', mensagem, k), "Chave": sharedSecretSent})
 
     #DEBUG
-    print("Mensagem cifrada:", sharedMessageCrypto)
-    print("Chave secreta pública:", sharedSecretSent)
+    print("*Envio:")
+    print("**Mensagem original: ", mensagem)
+    print("**JSON Enviado:", sharedMessageCrypto)
 
     # Retorna a mensagem cifrada com a chave pública no início
     return sharedMessageCrypto
@@ -99,22 +165,30 @@ def envio(mensagem, p, g, privateSecret):
 
 ##########################################################
 # Função para receber mensagem
-# mensagem: mensagem recebida para decifrar
+# jsonRecebido: mensagem e chave pública recebida para decifrar
 # p: número primo
-# sharedSecretReceived: chave pública recebida (número aleatório)
 # privateSecret: chave privada (número aleatório)
-def recebimento(mensagem, p, sharedSecretReceived, privateSecret):
+# Retorna uma string com a mensagem decifrada
+def recebimento(jsonRecebido, p, privateSecret):
+
+    # Recupera o campo Chave do JSON
+    sharedSecretReceived = jsonRecebido.get("Chave").Value
+
     # Cálculo da chave privada recebida (número aleatório)
-    privateSecretReceived = diffie_hellman(p, sharedSecretReceived, privateSecret)
+    privateSecretReceived = diffieHellmanK(p, sharedSecretReceived, privateSecret)
+
+    # Recupera o campo MensagemCriptografada do JSON
+    mensagem = jsonRecebido.get("MensagemCriptografada").Value
 
     # Decifra a mensagem recebida
     sharedMessageDecrypto = cifraCesar('D', mensagem, privateSecretReceived)
 
     #DEBUG
-    print("Mensagem recebida cifrada:", mensagem)
-    print("Chave secreta pública recebida:", sharedSecretReceived)
-    print("Mensagem recebida decifrada:", sharedMessageDecrypto)
-    print("Chave secreta privada calculada:", privateSecretReceived)
+    print("*Recebimento:")
+    print("**Mensagem cifrada:", mensagem)
+    print("**Mensagem decifrada:", sharedMessageDecrypto)
+    print("**Chave R (Recebida):", sharedSecretReceived)
+    print("**Chave K:", privateSecretReceived)
     
     # Retorna a mensagem decifrada com a chave privada calculada
     return sharedMessageDecrypto
@@ -129,35 +203,32 @@ def recebimento(mensagem, p, sharedSecretReceived, privateSecret):
 if __name__ == "__main__":
 
     # Parâmetros públicos para o Diffie-Hellman
-    p = 27 # Número primo aleatório (pode ser qualquer número primo maior que 2)
+    p = 23 # Número primo aleatório (pode ser qualquer número primo maior que 2)
     g = 11  # Base (pode ser qualquer número inteiro menor que p)
 
     # Entrada do usuário
     # Chave privada (números aleatórios)
-    privateSecret = int(input("Digite a sua chave privada (número aleatório): "))
+    privateSecret = int(input("Digite a sua chave privada de 2 dígitos (número aleatório): "))
     sentMessage = input("Texto a ser enviado: ")
 
     # Configurações do Client (Alice)
-    serverName = "192.168.78.169"
+    serverName = "192.168.31.61"#"10.1.70.15" # Server IP Address
     serverPort = 1300
     clientSocket = socket(AF_INET, SOCK_STREAM)
     clientSocket.connect((serverName,serverPort))
-   
+
+    # Chave pública (R) recebida do servidor (Bob)
+    rRecebido = json.loads(str(clientSocket.recv(65000),"utf-8")).get("R").Value
+    print(f"R Recebido: {rRecebido}")
+
     #### MENSAGEM ENVIADA ####
-    # envia a mensagem para o servidor
-    clientSocket.send(bytes(envio(sentMessage, p, g, privateSecret), "utf-8"))
+    # Envia um JSON com a mensagem criptografada e a chave R do client (Alice)
+    clientSocket.send(bytes(envio(sentMessage, p, g, privateSecret, rRecebido), "utf-8"))
 
     #### MENSAGEM RECEBIDA ####
-    # recebe a mensagem do servidor
-    receivedMessage = str(clientSocket.recv(65000),"utf-8")
-    print ("Texto recebido: ", receivedMessage)
-
-    # Mensagem com chave pública recebida (número aleatório)
-    sharedSecretReceived = int(receivedMessage[0:2])
-    sharedMessageCrypto = receivedMessage[2:len(receivedMessage)]
-
-    # Decifra a mensagem recebida
-    recebimento(sharedMessageCrypto, p, sharedSecretReceived, privateSecret)
+    # Recebe a mensagem aberta do servidor em caixa alta
+    text = str(clientSocket.recv(65000),"utf-8")
+    print ("Received from Make Upper Case Server: ", text)
 
     # Fecha a conexão
     clientSocket.close()
