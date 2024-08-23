@@ -172,13 +172,13 @@ def envio(mensagem, p, g, privateSecret, sharedSecretReceived):
 def recebimento(jsonRecebido, p, privateSecret):
 
     # Recupera o campo Chave do JSON
-    sharedSecretReceived = jsonRecebido.get("Chave").Value
+    sharedSecretReceived = jsonRecebido.get("Chave")
 
     # Cálculo da chave privada recebida (número aleatório)
     privateSecretReceived = diffieHellmanK(p, sharedSecretReceived, privateSecret)
 
     # Recupera o campo MensagemCriptografada do JSON
-    mensagem = jsonRecebido.get("MensagemCriptografada").Value
+    mensagem = jsonRecebido.get("MensagemCriptografada")
 
     # Decifra a mensagem recebida
     sharedMessageDecrypto = cifraCesar('D', mensagem, privateSecretReceived)
@@ -203,7 +203,7 @@ def recebimento(jsonRecebido, p, privateSecret):
 if __name__ == "__main__":
 
     # Parâmetros públicos para o Diffie-Hellman
-    p = 27 # Número primo aleatório (pode ser qualquer número primo maior que 2)
+    p = 23 # Número primo aleatório (pode ser qualquer número primo maior que 2)
     g = 11  # Base (pode ser qualquer número inteiro menor que p)
 
     # Entrada do usuário
@@ -229,8 +229,8 @@ if __name__ == "__main__":
 
     # Deixa a mensagem decifrada em caixa alta
     capitalizedSentence = mensagemDecrifada.upper()
-    connectionSocket.send(capitalizedSentence)
-    print ("Sent back to Client (Upper Case): ", str(capitalizedSentence, "utf-8"))
+    connectionSocket.send(bytes(capitalizedSentence, "utf-8"))
+    print ("Sent back to Client (Upper Case): ", capitalizedSentence)
 
     # Fecha a conexão
     connectionSocket.close()

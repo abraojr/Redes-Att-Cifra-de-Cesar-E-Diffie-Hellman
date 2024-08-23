@@ -212,13 +212,13 @@ if __name__ == "__main__":
     sentMessage = input("Texto a ser enviado: ")
 
     # Configurações do Client (Alice)
-    serverName = "192.168.31.61"#"10.1.70.15" # Server IP Address
+    serverName = "10.1.70.15" # Server IP Address
     serverPort = 1300
     clientSocket = socket(AF_INET, SOCK_STREAM)
     clientSocket.connect((serverName,serverPort))
 
     # Chave pública (R) recebida do servidor (Bob)
-    rRecebido = json.loads(str(clientSocket.recv(65000),"utf-8")).get("R").Value
+    rRecebido = json.loads(str(clientSocket.recv(65000),"utf-8")).get("R")
     print(f"R Recebido: {rRecebido}")
 
     #### MENSAGEM ENVIADA ####
